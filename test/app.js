@@ -2,6 +2,22 @@ const CounterApp = artifacts.require('CounterApp.sol')
 const VictionToken = artifacts.require('VictionToken.sol')
 const GitViction = artifacts.require('GitViction.sol')
 
+const convictionFromLast = function (alpha, blocksPassed, timeUnit, lastConv, oldAmount, newAmount) {
+    let conviction = lastConv;
+    let timeSteps = Math.floor(blocksPassed / timeUnit);
+    console.log('convictionFromLast', alpha, blocksPassed, timeUnit, lastConv, oldAmount, newAmount);
+    console.log('timeSteps', timeSteps);
+    while (timeSteps > 1) {
+        conviction = calculateConviction(alpha, conviction, oldAmount);
+        timeSteps --;
+    }
+    return calculateConviction(alpha, conviction, newAmount);
+}
+
+const calculateConviction = function(alpha, lastConv, amount) {
+    return (alpha * lastConv + amount);
+}
+
 const PROPKEYS = {
     AMOUNT: 0,
     ID: 1,
@@ -12,10 +28,6 @@ const PROPKEYS = {
     BLOCK: 6,
 }
 
-function getConviction(alpha, lastConv, amount) {
-    return (alpha * lastConv + amount).valueOf();
-}
-
 contract('CounterApp', (accounts) => {
     it('should be tested')
 })
@@ -23,12 +35,13 @@ contract('CounterApp', (accounts) => {
 contract('GitViction', async (accounts) => {
     let victionT;
     let viction;
-    let alpha, time_unit, weight, max_funded;
+    let alpha, timeUnit, weight, max_funded;
     let multiplier = Math.pow(10, 18);
     let mint0 = 100 * multiplier, mint1 = 50 * multiplier, mint2 = 10 * multiplier;
     let balance0, balance1, balance2, balance3;
     let proposal;
     let lastConv;
+    let lastBlockNumber, currentBlockNumber;
     let proposal1 = {
         amount: 5 * multiplier,
         id: 1234,
@@ -48,11 +61,11 @@ contract('GitViction', async (accounts) => {
             victionT.address
         );
 
-        alpha = await viction.CONV_ALPHA();
-        time_unit = await viction.TIME_UNIT();
+        alpha = (await viction.CONV_ALPHA()) / (await viction.PADD());
+        timeUnit = await viction.TIME_UNIT();
         weight = await viction.weight();
         max_funded = await viction.max_funded();
-        console.log(alpha, time_unit, weight, max_funded);
+        console.log(alpha, timeUnit, weight, max_funded);
 
         await victionT.mint(mint0, {from: accounts[0]});
         await victionT.mint(mint1, {from: accounts[1]});
@@ -125,18 +138,83 @@ contract('GitViction', async (accounts) => {
             proposal[PROPKEYS.STAKED],
             `stakes_per_voter for accounts[0] is not ${proposal1.stakes[0]}`,
         );
+        lastBlockNumber = (await web3.eth.getBlock("latest")).number;
+        assert.equal(
+            lastBlockNumber,
+            proposal[PROPKEYS.BLOCK],
+            `last block is not ${lastBlockNumber}`,
+        );
         assert.equal(
             proposal1.stakes[0],
             await viction.getProposalVoterStake(1, accounts[0]),
             `proposal stakes_per_voter for accounts[0] is not ${proposal1.stakes[0].valueOf()}`,
         );
-        lastConv = getConviction(alpha, 0, proposal1.stakes[0]);
-        console.log('proposal lastConv', proposal[PROPKEYS.CONV].valueOf());
-        console.log('lastConv', lastConv);
+        lastConv = convictionFromLast(
+            alpha,
+            timeUnit,
+            timeUnit,
+            0,
+            0,
+            proposal1.stakes[0]
+        );
         assert.equal(
             lastConv.valueOf(),
             proposal[PROPKEYS.CONV],
             `proposal stakes_per_voter for accounts[0] is not ${lastConv.valueOf()}`,
         );
+        await mineBlocks(2);
+        await viction.stakeToProposal(1, proposal1.stakes[1], {from: accounts[1]});
+        proposal = await viction.getProposal(1);
+        currentBlockNumber = (await web3.eth.getBlock("latest")).number;
+        lastConv = convictionFromLast(
+            alpha,
+            currentBlockNumber - lastBlockNumber,
+            timeUnit,
+            lastConv,
+            proposal1.stakes[0],
+            proposal1.stakes[1],
+        );
+        assert.equal(
+            lastConv.valueOf(),
+            proposal[PROPKEYS.CONV],
+            `proposal lastConv for accounts[1] is not ${lastConv.valueOf()}`,
+        );
     });
 });
+
+async function mineBlocks(numberOfBlocks) {
+    console.log('before IB', (await web3.eth.getBlock("latest")).number);
+    for (let i = 0; i < numberOfBlocks; i++) {
+        await increaseTime(15);
+    }
+    console.log('after IB', (await web3.eth.getBlock("latest")).number);
+}
+
+function increaseTime(duration) {
+  const id = Date.now();
+
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.sendAsync(
+      {
+        jsonrpc: "2.0",
+        method: "evm_increaseTime",
+        params: [duration],
+        id: id
+      },
+      err1 => {
+        if (err1) return reject(err1);
+
+        web3.currentProvider.sendAsync(
+          {
+            jsonrpc: "2.0",
+            method: "evm_mine",
+            id: id + 1
+          },
+          (err2, res) => {
+            return err2 ? reject(err2) : resolve(res);
+          }
+        );
+      }
+    );
+  });
+};

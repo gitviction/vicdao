@@ -4,7 +4,7 @@ import './token/VictionToken.sol';
 
 contract GitViction {
     uint256 public TIME_UNIT = 1;
-    uint256 public PADD = 10 ** 17;
+    uint256 public PADD = 10;
     uint256 public CONV_ALPHA = 9 * PADD;
     uint256 public weight = 5;
     uint256 public max_funded = 20;  // from 100
@@ -81,6 +81,9 @@ contract GitViction {
         uint256 old_staked = proposals[id].staked_tokens;
         proposals[id].stakes_per_voter[msg.sender] += amount;
         proposals[id].staked_tokens += amount;
+        if (proposals[id].block_last == 0) {
+            proposals[id].block_last = block.number - TIME_UNIT;
+        }
         stakes_per_voter[msg.sender] += amount;
         calculateAndSetConviction(id, old_staked);
     }
@@ -103,8 +106,9 @@ contract GitViction {
         // calculateConviction and store it
         uint256 conviction = calculateConviction(
             block.number - proposal.block_last,
-            proposal.staked_tokens,
-            old_staked
+            proposal.conviction_last,
+            old_staked,
+            proposal.staked_tokens
         );
         proposal.block_last = block.number;
         proposal.conviction_last = conviction;
@@ -113,14 +117,14 @@ contract GitViction {
         }
     }
 
-    function calculateConviction(uint256 time_passed, uint256 old_amount, uint256 new_amount) view public returns(uint256 conviction) {
+    function calculateConviction(uint256 time_passed, uint256 last_conv, uint256 old_amount, uint256 new_amount) view public returns(uint256 conviction) {
         uint256 steps = time_passed / TIME_UNIT;
         uint256 i;
+        conviction = last_conv;
         for (i = 0; i < steps - 1; i++) {
-            conviction += (CONV_ALPHA ** i) * old_amount;
+            conviction = CONV_ALPHA * conviction / PADD + old_amount;
         }
-        conviction += (CONV_ALPHA ** i) * new_amount;
-        return conviction;
+        conviction = CONV_ALPHA * conviction / PADD + new_amount;
     }
 
     function calculateThreshold(uint256 amount_commons) view public returns (uint256) {
