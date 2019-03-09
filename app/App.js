@@ -94,13 +94,20 @@ export default class App extends React.Component {
     return (
       <AppContainer>
         <AppView title="GitViction">
-          <Text color="tomato" size="xlarge">
-            List of issues you can vote on
-          </Text>
+          <Info background="#FFF9EB">
+            This App uses "conviction voting" to let members of the DAO vote on
+            prioritization and funding of GitHub issues. The novelty in the
+            voting scheme is a time component, whereas the token vote builds
+            "conviction" over time that gets added to a total token weight. Once
+            this total token weight reaches a treshold, a function is triggered
+            to create a bounty on GitCoin that is funded for the amount
+            requested in the issue.
+          </Info>
           <Table>
             <TableRow>
               <TableHeader title="Issue" />
               <TableHeader title="Funding" />
+              <TableHeader title="Voting Graph" />
               <TableHeader title="Action" />
             </TableRow>
             {issues}
