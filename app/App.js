@@ -54,29 +54,43 @@ export default class App extends React.Component {
   }
 
   startVote(issueid) {
-    const p = app.addProposal(5, 1, 0x0);
-    //debugger;
+    //const p = app.addProposal(5, 1, 0x0);
+    app.stakeToProposal(0,5);
   }
 
-  mintForMe() {
-    // OK mint me some voting tokens please
-    app.mint(100);
+  addProposal(issueid) {
+    app.addProposal(5, 1, 0x0);
   }
+
+  // mintForMe() {
+  //   debugger;
+  //   // OK mint me some voting tokens please
+  //   app.mintFor(100e18,"0xb4124ceb3451635dacedd11767f004d8a28c6ee7");
+  // }
 
   getVote() {
+    app.call("getProposal", 0).subscribe(result => {
+//      debugger;
+      console.log(result);
+    });
 
+    app.call("getProposalVoterStake",0,"0xb4124ceb3451635dacedd11767f004d8a28c6ee7").subscribe(result => {
+      // debugger;
+      console.log(result);
+    });
 
-   
-        app
-          .call('getProposal',1)
-          .first((v)=>{
-            debugger;
-          })
-          .map(value => parseInt(value, 1))
-          .subscribe((v)=>{
-            debugger;
-          })
-      
+    app.call("balanceOf","0xb4124ceb3451635dacedd11767f004d8a28c6ee7").subscribe(result => {
+       debugger;
+      console.log(result);
+    });
+
+    // app
+    //   .call('getProposal',1)
+    //   .first()
+    //   .map()
+    //   .subscribe((v)=>{
+    //     debugger;
+    //   })
 
     // const r = app.getProposal(1, (err, r) => {
     //   debugger;
@@ -197,11 +211,20 @@ export default class App extends React.Component {
           <Button
             mode="outline"
             onClick={e => {
+              this.addProposal();
+            }}
+          >
+            Add proposal
+          </Button>
+
+          {/* <Button
+            mode="outline"
+            onClick={e => {
               this.mintForMe();
             }}
           >
             mint Voting tokens
-          </Button>
+          </Button> */}
         </AppView>
       </AppContainer>
     );

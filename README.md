@@ -8,6 +8,12 @@ in one terminal run `npm run start:app`
 
 in another one run `npm run start:aragon:http`
 
+## Troubleshooting
+
+run `rm -Rf dist/ build/ && npm run start:app` to recompile app+contracts
+
+
+
 
 
 
