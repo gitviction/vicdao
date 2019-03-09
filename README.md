@@ -4,8 +4,11 @@ VIC dao allows a group of people to vote on github issues - by using the concept
 
 ## Running
 
-in one terminal run `aragon devchain`
-in another one run `aragon run`
+in one terminal run `npm run start:app`
+
+in another one run `npm run start:aragon:http`
+
+
 
 
 
