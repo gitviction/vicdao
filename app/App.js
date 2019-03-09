@@ -32,6 +32,8 @@ const AppContainer = styled(AragonApp)`
   justify-content: center;
 `;
 
+const app = new Aragon(new providers.WindowMessage(window.parent));
+
 const data = [
   { name: "t1", conviction: 0, tokens: 0, total: 0 },
   { name: "t2", conviction: 0, tokens: 0, total: 0 },
@@ -51,7 +53,36 @@ export default class App extends React.Component {
     };
   }
 
-  startVote(issueid) {}
+  startVote(issueid) {
+    const p = app.addProposal(5, 1, 0x0);
+    //debugger;
+  }
+
+  mintForMe() {
+    // OK mint me some voting tokens please
+    app.mint(100);
+  }
+
+  getVote() {
+
+
+   
+        app
+          .call('getProposal',1)
+          .first((v)=>{
+            debugger;
+          })
+          .map(value => parseInt(value, 1))
+          .subscribe((v)=>{
+            debugger;
+          })
+      
+
+    // const r = app.getProposal(1, (err, r) => {
+    //   debugger;
+    // });
+    // debugger;
+  }
 
   componentDidMount() {
     axios
@@ -153,6 +184,24 @@ export default class App extends React.Component {
           </Table>
 
           <hr />
+
+          <Button
+            mode="outline"
+            onClick={e => {
+              this.getVote();
+            }}
+          >
+            get Vote
+          </Button>
+
+          <Button
+            mode="outline"
+            onClick={e => {
+              this.mintForMe();
+            }}
+          >
+            mint Voting tokens
+          </Button>
         </AppView>
       </AppContainer>
     );

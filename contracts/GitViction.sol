@@ -42,6 +42,11 @@ contract GitViction is AragonApp {
         token = VictionToken(viction_token);
     }
 
+    function mint(uint256 _amount) public {
+        token.mintFor(_amount,msg.sender);
+    }
+
+
     function addProposal(
         uint256 _amount_commons,
         uint256 _external_id,
@@ -56,6 +61,8 @@ contract GitViction is AragonApp {
             0,
             0
         );
+        ProposalAdded(proposal_counter);
+        proposal_counter++;        
     }
 
     function getProposal (uint256 id) view public returns (

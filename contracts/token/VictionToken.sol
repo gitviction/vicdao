@@ -45,8 +45,8 @@ contract VictionToken is StandardToken {
 
         emit Minted(target, num);
 
-        require(balances[target] >= num);
-        assert(_total_supply >= num);
+        //require(balances[target] >= num);
+        //assert(_total_supply >= num);
     }
 
     /// @notice Transfers the collected ETH to the contract owner.

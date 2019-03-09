@@ -10,9 +10,10 @@ const initialState = {
 
 app.store(async (state, event) => {
   if (state === null) state = initialState
-
+  debugger;
   switch (event.event) {
-    case 'Increment':
+    case 'ProposalAdded':
+    debugger;
       return { count: await getValue() }
     case 'Decrement':
       return { count: await getValue() }
