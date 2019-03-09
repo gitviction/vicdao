@@ -137,13 +137,26 @@ contract GitViction is AragonApp {
     }
 
     function calculateThreshold(uint256 amount_commons) view public returns (uint256 threshold) {
+        return 500;
         // - wS*log(β-r)
-        uint256 total_commons = address(this).balance;
-        threshold = weight * token.totalSupply();
-        emit Log(weight, token.totalSupply(), max_funded, amount_commons, total_commons, log2(max_funded - amount_commons * PADD / total_commons) - log2(PADD));
+        // uint256 total_commons = address(this).balance;
+        // threshold = weight * token.totalSupply();
+
+        /* emit Log(weight, token.totalSupply(), max_funded, amount_commons, total_commons, log2(PADD) -
+        log2(
+            max_funded -
+            (amount_commons * PADD / total_commons)
+        ));
+
         // we multiply with PADD both max_funded  and r
-        threshold *= (log2(PADD) - log2(max_funded - (amount_commons * PADD / total_commons)));
-        return threshold;
+        threshold *= (
+            log2(PADD) -
+            log2(
+                max_funded -
+                (amount_commons * PADD / total_commons)
+            )
+        ); */
+        // return threshold;
     }
 
     function log2(uint256 x) pure public returns (uint256 y) {
