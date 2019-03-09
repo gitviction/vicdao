@@ -1,4 +1,3 @@
-const CounterApp = artifacts.require('CounterApp.sol')
 const VictionToken = artifacts.require('VictionToken.sol')
 const GitViction = artifacts.require('GitViction.sol')
 
@@ -33,10 +32,6 @@ const PROPKEYS = {
     BLOCK: 6,
 }
 
-contract('CounterApp', (accounts) => {
-    it('should be tested')
-})
-
 contract('GitViction', async (accounts) => {
     let victionT;
     let viction;
@@ -60,8 +55,10 @@ contract('GitViction', async (accounts) => {
         address: accounts[5],
     }
     it("big test", async () => {
-        victionT = await VictionToken.deployed();
-        viction = await GitViction.deployed(victionT.address);
+        victionT = await VictionToken.new({from: accounts[0]});
+        viction = await GitViction.new({from: accounts[0]});
+
+        await viction.setToken(victionT.address, {from: accounts[0]});
         assert.equal(
             await viction.token(),
             victionT.address
