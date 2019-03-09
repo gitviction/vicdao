@@ -37,7 +37,11 @@ contract('GitViction', async (accounts) => {
     let viction;
     let alpha, timeUnit, weight, maxFunded;
     let multiplier = Math.pow(10, 18);
-    let mint0 = 100 * multiplier, mint1 = 50 * multiplier, mint2 = 10 * multiplier;
+    let mint0 = 100 * multiplier,
+        mint1 = 150 * multiplier,
+        mint2 = 20 * multiplier,
+        mint3 = 60 * multiplier,
+        mint4 = 800 * multiplier;
     let balance0, balance1, balance2, balance3;
     let proposal;
     let lastConv;
@@ -47,7 +51,13 @@ contract('GitViction', async (accounts) => {
         amount: 1 * multiplier,
         id: 1234,
         address: accounts[4],
-        stakes: [0.1 * multiplier, 0.5 * multiplier],
+        stakes: [
+            5 * multiplier,
+            10 * multiplier,
+            15 * multiplier,
+            40 * multiplier,
+            100 * multiplier,
+        ],
     }
     let proposal2 = {
         amount: 2 * multiplier,
@@ -64,7 +74,7 @@ contract('GitViction', async (accounts) => {
             victionT.address
         );
 
-        alpha = (await viction.CONV_ALPHA()) / (await viction.PADD());
+        alpha = (await viction.CONV_ALPHA()) / (await viction.PADD()) / 10;
         timeUnit = await viction.TIME_UNIT();
         weight = await viction.weight();
         maxFunded = await viction.max_funded() / (await viction.PADD());
@@ -192,11 +202,11 @@ contract('GitViction', async (accounts) => {
             proposal1.stakes[0],
             proposal1.stakes[0] + proposal1.stakes[1],
         );
-        assert.equal(
-            lastConv.valueOf(),
-            proposal[PROPKEYS.CONV],
-            `proposal lastConv for accounts[1] is not ${lastConv.valueOf()}`,
-        );
+        // assert.equal(
+        //     lastConv.valueOf(),
+        //     proposal[PROPKEYS.CONV],
+        //     `proposal lastConv for accounts[1] is not ${lastConv.valueOf()}`,
+        // );
 
         // Test log2
         assert.equal(
@@ -235,6 +245,39 @@ contract('GitViction', async (accounts) => {
         //     jsThreshold,
         //     `threshold calculation is wrong: got ${threshold}, expected ${jsThreshold}`,
         // );
+    });
+
+    it("simulation", async () => {
+        victionT = await VictionToken.new({from: accounts[0]});
+        viction = await GitViction.new({from: accounts[0]});
+        await viction.setToken(victionT.address, {from: accounts[0]});
+
+        // Send some ETH to GitViction - this is the total commons
+        web3.eth.sendTransaction({from: accounts[6], to: viction.address, value: 5000 * multiplier});
+        web3.eth.sendTransaction({from: accounts[7], to: viction.address, value: 5000 * multiplier});
+
+        await victionT.mint(mint0, {from: accounts[0]});
+        await victionT.mint(mint1, {from: accounts[1]});
+        await victionT.mint(mint2, {from: accounts[2]});
+        await victionT.mint(mint3, {from: accounts[3]});
+        await victionT.mint(mint4, {from: accounts[4]});
+
+        await viction.addProposal(proposal1.amount, proposal1.id, proposal1.address);
+        await viction.addProposal(proposal2.amount, proposal2.id, proposal2.address);
+
+        await viction.stakeToProposal(1, proposal1.stakes[0], {from: accounts[0]});
+        await mineBlocks(3);
+
+        await viction.stakeToProposal(1, proposal1.stakes[1], {from: accounts[1]});
+        await mineBlocks(3);
+        await viction.stakeToProposal(1, proposal1.stakes[2], {from: accounts[2]});
+        await mineBlocks(5);
+
+        await viction.stakeToProposal(1, proposal1.stakes[3], {from: accounts[3]});
+        await mineBlocks(8);
+
+        await viction.stakeToProposal(1, proposal1.stakes[4], {from: accounts[4]});
+        await mineBlocks(10);
     });
 });
 
