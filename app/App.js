@@ -17,14 +17,31 @@ import Aragon, { providers } from "@aragon/client";
 import styled from "styled-components";
 import axios from "axios";
 import GitterCritter from "./GitterCrittter";
-import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  Legend,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
 
 const AppContainer = styled(AragonApp)`
   align-items: center;
   justify-content: center;
 `;
 
-const data = [{ name: "t", uv: 400, pv: 2400, amt: 2400 }];
+const data = [
+  { name: "t1", conviction: 0, tokens: 0, total: 0 },
+  { name: "t2", conviction: 0, tokens: 0, total: 0 },
+  { name: "t3", conviction: 0, tokens: 1, total: 1 },
+  { name: "t4", conviction: 0.5, tokens: 1, total: 1.5 },
+  { name: "t5", conviction: 1, tokens: 2, total: 3 },
+  { name: "t6", conviction: 1.5, tokens: 2, total: 3.5 },
+  { name: "t7", conviction: 1, tokens: 0, total: 1 },
+  { name: "t8", conviction: 0, tokens: 0, total: 0 }
+];
 
 export default class App extends React.Component {
   constructor(props) {
@@ -82,15 +99,23 @@ export default class App extends React.Component {
             </Text>
           </TableCell>
           <TableCell>
-            <LineChart width={300} height={150} data={data}>
-              <Line type="monotone" dataKey="uv" stroke="#8884d8" />
+            <LineChart
+              width={400}
+              height={150}
+              data={data}
+              margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+            >
+              <Line type="monotone" dataKey="tokens" stroke="#000" />
+              <Line type="monotone" dataKey="conviction" stroke="#8884d8" />
+              <Line type="monotone" dataKey="total" stroke="#82ca9d" />
               <CartesianGrid stroke="#ccc" />
               <XAxis dataKey="name" />
               <YAxis />
+              <Tooltip />
             </LineChart>
           </TableCell>
           <TableCell>
-            <TextInput type="number" />
+            <TextInput type="number" defaultValue="0" />
             <Button
               mode="outline"
               onClick={e => {
@@ -111,7 +136,7 @@ export default class App extends React.Component {
           <Info background="#FFF9EB">
             This App uses "conviction voting" to let members of the DAO vote on
             prioritization and funding of GitHub issues. The novelty in the
-            voting scheme is a time component, whereas the token vote builds
+            voting scheme is a time component, where the token vote builds
             "conviction" over time that gets added to a total token weight. Once
             this total token weight reaches a treshold, a function is triggered
             to create a bounty on GitCoin that is funded for the amount
