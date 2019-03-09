@@ -7,9 +7,12 @@
     "@aragon/os": "^4.0.1",
     "@aragon/ui": "^0.16.0",
     "axios": "^0.18.0",
+    "human-standard-token-abi": "^2.0.0",
+    "ipfs-mini": "^1.1.5",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
-    "styled-components": "^3.4.10"
+    "styled-components": "^3.4.10",
+    "web3": "^1.0.0-beta.48"
   },
   "devDependencies": {
     "@aragon/cli": "^5.4.0",

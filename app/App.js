@@ -3,6 +3,7 @@ import { AragonApp, Button, Text, observe } from "@aragon/ui";
 import Aragon, { providers } from "@aragon/client";
 import styled from "styled-components";
 import axios from "axios";
+import GitterCritter from "./GitterCrittter";
 
 const AppContainer = styled(AragonApp)`
   display: flex;
@@ -21,6 +22,7 @@ export default class App extends React.Component {
   startVote(issueid) {}
 
   componentDidMount() {
+  
     axios
       .get(`https://api.github.com/repos/gitviction/vicdao/issues`)
       .then(res => {
@@ -69,6 +71,7 @@ export default class App extends React.Component {
             >
               start vote
             </button>
+            <GitterCritter issue={issue} app={this.props.app} />
           </td>
         </tr>
       );
@@ -88,6 +91,10 @@ export default class App extends React.Component {
             </thead>
             {issues}
           </table>
+
+          <hr />
+
+          
 
           {/* <ObservedCount observable={this.props.observable} />
           <Button onClick={() => this.props.app.decrement(1)}>DECC</Button>
