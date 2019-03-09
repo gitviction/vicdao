@@ -89,7 +89,7 @@ export default class App extends React.Component {
   render() {
     const issues = this.state.issues.map(issue => {
       return (
-        <TableRow>
+        <TableRow key={issue.title}>
           <TableCell>
             <Text>{issue.title}</Text>
           </TableCell>
@@ -153,18 +153,8 @@ export default class App extends React.Component {
           </Table>
 
           <hr />
-
-          {/* <ObservedCount observable={this.props.observable} />
-          <Button onClick={() => this.props.app.decrement(1)}>DECC</Button>
-          <Button onClick={() => this.props.app.increment(1)}>Increment</Button> */}
         </AppView>
       </AppContainer>
     );
   }
 }
-
-const ObservedCount = observe(state$ => state$, { count: 0 })(({ count }) => (
-  <Text.Block style={{ textAlign: "center" }} size="xxlarge">
-    {count}
-  </Text.Block>
-));
