@@ -5,13 +5,13 @@ const GitViction = artifacts.require('GitViction.sol')
 const convictionFromLast = function (alpha, blocksPassed, timeUnit, lastConv, oldAmount, newAmount) {
     let conviction = lastConv;
     let timeSteps = Math.floor(blocksPassed / timeUnit);
-    console.log('convictionFromLast', alpha, blocksPassed, timeUnit, lastConv, oldAmount, newAmount);
-    console.log('timeSteps', timeSteps);
+
     while (timeSteps > 1) {
         conviction = calculateConviction(alpha, conviction, oldAmount);
         timeSteps --;
     }
-    return calculateConviction(alpha, conviction, newAmount);
+    conviction = calculateConviction(alpha, conviction, newAmount);
+    return conviction;
 }
 
 const calculateConviction = function(alpha, lastConv, amount) {
@@ -172,7 +172,7 @@ contract('GitViction', async (accounts) => {
             timeUnit,
             lastConv,
             proposal1.stakes[0],
-            proposal1.stakes[1],
+            proposal1.stakes[0] + proposal1.stakes[1],
         );
         assert.equal(
             lastConv.valueOf(),

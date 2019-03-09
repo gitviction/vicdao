@@ -125,6 +125,7 @@ contract GitViction {
             conviction = CONV_ALPHA * conviction / PADD + old_amount;
         }
         conviction = CONV_ALPHA * conviction / PADD + new_amount;
+        return conviction;
     }
 
     function calculateThreshold(uint256 amount_commons) view public returns (uint256) {
