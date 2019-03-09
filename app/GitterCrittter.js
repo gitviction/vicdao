@@ -5,6 +5,7 @@ const ipfs = new IPFS();
 import tokenAbi from "human-standard-token-abi";
 import standardbounties from "./sb";
 const Web3 = require("web3");
+import { Button } from "@aragon/ui";
 
 const DAIADDRESS = "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359";
 const BNADDRESS = "0x2af47a65da8CD66729b4209C22017d6A5C2d2400";
@@ -16,7 +17,6 @@ export default class GitterCritter extends React.Component {
 
   componentDidMount() {
     //debugger;
-   
   }
 
   postIt() {
@@ -82,13 +82,14 @@ export default class GitterCritter extends React.Component {
 
   render() {
     return (
-      <button
+      <Button
+        mode="strong"
         onClick={e => {
           this.postIt();
         }}
       >
         Post It
-      </button>
+      </Button>
     );
   }
 }

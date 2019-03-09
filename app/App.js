@@ -1,12 +1,22 @@
 import React from "react";
-import { AragonApp, Button, Text, observe } from "@aragon/ui";
+import {
+  AppView,
+  AragonApp,
+  Button,
+  Main,
+  Table,
+  TableHeader,
+  TableRow,
+  TableCell,
+  Text,
+  observe
+} from "@aragon/ui";
 import Aragon, { providers } from "@aragon/client";
 import styled from "styled-components";
 import axios from "axios";
 import GitterCritter from "./GitterCrittter";
 
 const AppContainer = styled(AragonApp)`
-  display: flex;
   align-items: center;
   justify-content: center;
 `;
@@ -22,7 +32,6 @@ export default class App extends React.Component {
   startVote(issueid) {}
 
   componentDidMount() {
-  
     axios
       .get(`https://api.github.com/repos/gitviction/vicdao/issues`)
       .then(res => {
@@ -58,48 +67,51 @@ export default class App extends React.Component {
   render() {
     const issues = this.state.issues.map(issue => {
       return (
-        <tr>
-          <td>{issue.title}</td>
-          <td>
-            {issue.amount} {issue.denomination}
-          </td>
-          <td>
-            <button
+        <TableRow>
+          <TableCell>
+            <Text>{issue.title}</Text>
+          </TableCell>
+          <TableCell>
+            <Text>
+              {issue.amount} {issue.denomination}
+            </Text>
+          </TableCell>
+          <TableCell>
+            <Button
+              mode="outline"
               onClick={e => {
                 this.startVote(issue.url);
               }}
             >
-              start vote
-            </button>
+              Vote
+            </Button>
             <GitterCritter issue={issue} app={this.props.app} />
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     });
 
     return (
       <AppContainer>
-        <div>
-          <h1>List of issues you can vote on</h1>
-          <table>
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Amount</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>{issues}</tbody>
-          </table>
+        <AppView title="GitViction">
+          <Text color="tomato" size="xlarge">
+            List of issues you can vote on
+          </Text>
+          <Table>
+            <TableRow>
+              <TableHeader title="Issue" />
+              <TableHeader title="Funding" />
+              <TableHeader title="Action" />
+            </TableRow>
+            {issues}
+          </Table>
 
           <hr />
-
-          
 
           {/* <ObservedCount observable={this.props.observable} />
           <Button onClick={() => this.props.app.decrement(1)}>DECC</Button>
           <Button onClick={() => this.props.app.increment(1)}>Increment</Button> */}
-        </div>
+        </AppView>
       </AppContainer>
     );
   }
