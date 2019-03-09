@@ -86,7 +86,7 @@ export default class App extends React.Component {
                 <th>Action</th>
               </tr>
             </thead>
-            {issues}
+            <tbody>{issues}</tbody>
           </table>
 
           {/* <ObservedCount observable={this.props.observable} />
