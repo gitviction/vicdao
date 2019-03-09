@@ -71,6 +71,9 @@ export default class GitterCritter extends React.Component {
   }
 
   mkTx(hash) {
+
+    const t = this.props.app.external(BNADDRESS, standardbounties.abi)
+
     //   debugger;
     //   this.web3 = new Web3(this.props.app);
     // const standardbountiesInstance = new this.web3.eth.Contract(

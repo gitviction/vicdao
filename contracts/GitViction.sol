@@ -1,8 +1,10 @@
 pragma solidity ^0.4.24;
 
 import './token/VictionToken.sol';
+import '@aragon/os/contracts/apps/AragonApp.sol';
 
-contract GitViction {
+contract GitViction is AragonApp{
+
     uint256 public TIME_UNIT = 1;
     uint256 public PADD = 10;
     uint256 public CONV_ALPHA = 9 * PADD;
