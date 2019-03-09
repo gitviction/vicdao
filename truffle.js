@@ -49,7 +49,9 @@ module.exports = {
     development: {
       host: 'localhost',
       port: 8545,
-      network_id: '*'
+      network_id: '*',
+      accounts: 15,
+      defaultEtherBalance: 1000 * Math.pow(10, 18),
     },
     mainnet: {
       network_id: 1,
