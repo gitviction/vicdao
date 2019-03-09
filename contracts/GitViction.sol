@@ -31,7 +31,7 @@ contract GitViction is AragonApp {
     event Staked(uint256 id, address voter, uint256 amount);
     event Withdrawn(uint256 id, address voter, uint256 amount);
     event ProposalPassed(uint256 id, uint256 conviction);
-    event Log(uint256 weight, uint256 totalSupply, uint256 max_funded, uint256 amount_commons, uint256 total_commons, uint256 logs);
+    event Log(uint256 conviction);
 
     function () payable external {}
 
@@ -130,14 +130,15 @@ contract GitViction is AragonApp {
         uint256 i;
         conviction = last_conv;
         for (i = 0; i < steps - 1; i++) {
-            conviction = CONV_ALPHA * conviction / PADD + old_amount;
+            conviction = CONV_ALPHA * conviction / PADD / 10 + old_amount;
         }
-        conviction = CONV_ALPHA * conviction / PADD + new_amount;
+        conviction = CONV_ALPHA * conviction / PADD / 10 + new_amount;
+        emit Log(conviction);
         return conviction;
     }
 
     function calculateThreshold(uint256 amount_commons) view public returns (uint256 threshold) {
-        return 500;
+        return 400 * (10 ** 18);
         // - wS*log(β-r)
         // uint256 total_commons = address(this).balance;
         // threshold = weight * token.totalSupply();
