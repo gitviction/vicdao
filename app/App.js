@@ -3,6 +3,7 @@ import {
   AppView,
   AragonApp,
   Button,
+  Info,
   Main,
   Table,
   TableHeader,
@@ -15,11 +16,14 @@ import Aragon, { providers } from "@aragon/client";
 import styled from "styled-components";
 import axios from "axios";
 import GitterCritter from "./GitterCrittter";
+import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts";
 
 const AppContainer = styled(AragonApp)`
   align-items: center;
   justify-content: center;
 `;
+
+const data = [{ name: "t", uv: 400, pv: 2400, amt: 2400 }];
 
 export default class App extends React.Component {
   constructor(props) {
@@ -75,6 +79,14 @@ export default class App extends React.Component {
             <Text>
               {issue.amount} {issue.denomination}
             </Text>
+          </TableCell>
+          <TableCell>
+            <LineChart width={300} height={150} data={data}>
+              <Line type="monotone" dataKey="uv" stroke="#8884d8" />
+              <CartesianGrid stroke="#ccc" />
+              <XAxis dataKey="name" />
+              <YAxis />
+            </LineChart>
           </TableCell>
           <TableCell>
             <Button
