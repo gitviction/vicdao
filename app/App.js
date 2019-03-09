@@ -10,6 +10,7 @@ import {
   TableRow,
   TableCell,
   Text,
+  TextInput,
   observe
 } from "@aragon/ui";
 import Aragon, { providers } from "@aragon/client";
@@ -89,6 +90,7 @@ export default class App extends React.Component {
             </LineChart>
           </TableCell>
           <TableCell>
+            <TextInput type="number" />
             <Button
               mode="outline"
               onClick={e => {
