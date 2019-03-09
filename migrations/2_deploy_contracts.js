@@ -14,6 +14,8 @@ module.exports = function(deployer, accounts) {
       ]);
     })
     .then(() => {
-      return deployer.deploy(GitViction, VictionToken.address);
-    });
+      return deployer.deploy(GitViction);
+  }).then() => {
+      GitViction.initialize(VictionToken.address);
+  };
 };

@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import './token/VictionToken.sol';
 import '@aragon/os/contracts/apps/AragonApp.sol';
 
-contract GitViction is AragonApp{
+contract GitViction is AragonApp {
 
     uint256 public TIME_UNIT = 1;
     uint256 public PADD = 10;
@@ -27,10 +27,6 @@ contract GitViction is AragonApp{
         mapping(address => uint256) stakes_per_voter;
     }
 
-    constructor (address viction_token) public {
-        token = VictionToken(viction_token);
-    }
-
     event ProposalAdded(uint256 id);
     event Staked(uint256 id, address voter, uint256 amount);
     event Withdrawn(uint256 id, address voter, uint256 amount);
@@ -40,10 +36,8 @@ contract GitViction is AragonApp{
     bytes32 constant public VOTER_ROLE = keccak256("VOTER_ROLE");
 
     // Aragon wrapper
-    function initialize() onlyInit public {
-
-       
-        initialized();
+    function initialize(address viction_token) onlyInit public {
+        token = VictionToken(viction_token);
     }
 
     // function getVictionTokenBalance(address _owner) public returns (uint256) {
