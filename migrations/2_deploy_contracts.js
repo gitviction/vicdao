@@ -3,7 +3,7 @@ var VictionToken = artifacts.require("VictionToken.sol");
 var GitViction = artifacts.require("GitViction.sol");
 
 module.exports = function(deployer, accounts) {
-  deployer.deploy(CounterApp);
+  //deployer.deploy(CounterApp);
   deployer
     .deploy(VictionToken)
     .then(instance => {

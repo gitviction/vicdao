@@ -36,6 +36,20 @@ contract GitViction is AragonApp{
     event Withdrawn(uint256 id, address voter, uint256 amount);
     event ProposalPassed(uint256 id, uint256 conviction);
 
+    // Aragon roles
+    bytes32 constant public VOTER_ROLE = keccak256("VOTER_ROLE");
+
+    // Aragon wrapper
+    function initialize() onlyInit public {
+
+       
+        initialized();
+    }
+
+    // function getVictionTokenBalance(address _owner) public returns (uint256) {
+    //     return token.balanceOf(_owner);
+    // }
+
     function addProposal(
         uint256 _amount_commons,
         uint256 _external_id,
