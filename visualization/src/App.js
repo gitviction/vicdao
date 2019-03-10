@@ -4,6 +4,7 @@ import axios from "axios";
 import styled from "styled-components";
 import { ethers } from 'ethers';
 import {CONTRACTS} from './contracts';
+import GitCoinButton from 'gitcoinbutton';
 
 // import GitterCritter from "./GitterCrittter";
 import {
@@ -210,6 +211,13 @@ export default class App extends React.Component {
                   this.startVote(issue, this.state.votingamount);
               }}>Vote
             </button>
+            <GitCoinButton  meta={{}}
+            expirydelta={60 * 60 * 24 * 30 * 3}
+            value="1"
+            onTxHash={hash => {
+              this.setState({ txhash: hash });
+            }}
+          />
           </TableData>
         </TableRow>
       );
