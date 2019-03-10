@@ -288,6 +288,10 @@ contract('GitViction', async (accounts) => {
 
         await viction.stakeToProposal(1, proposal1.stakes[4], {from: accounts[4]});
         simValues = simValues.concat(await mineConviction(viction, 1, 10));
+        simValues = simValues.map((value, i) => {
+            value.name = `t${i}`;
+            return value;
+        });
         console.log('simValues', JSON.stringify(simValues))
     });
 
@@ -339,6 +343,16 @@ contract('GitViction', async (accounts) => {
         simValues1 = simValues1.concat(await mineConviction(viction, 1, 10));
         await viction.stakeToProposal(2, proposal2.stakes[4], {from: accounts[4]});
         simValues2 = simValues2.concat(await mineConviction(viction, 2, 10));
+
+        simValues1 = simValues1.map((value, i) => {
+            value.name = `t${i}`;
+            return value;
+        });
+        simValues2 = simValues2.map((value, i) => {
+            value.name = `t${i}`;
+            return value;
+        });
+
         console.log('simValues1', JSON.stringify(simValues1))
         console.log('simValues2', JSON.stringify(simValues2))
     });
@@ -383,12 +397,13 @@ function increaseTime(duration) {
 
 async function getConviction(viction, proposalId) {
     let proposal = await viction.getProposal(proposalId);
-    return [
-        proposal[PROPKEYS.CONV].valueOf(),
-        proposal[PROPKEYS.STAKED].valueOf(),
+    return {
+        conviction: proposal[PROPKEYS.CONV].valueOf(),
+        tokens: proposal[PROPKEYS.STAKED].valueOf(),
         // proposal[PROPKEYS.BLOCK],
-        (await web3.eth.getBlock("latest")).number,
-    ];
+        time: (await web3.eth.getBlock("latest")).number,
+        total: proposal[PROPKEYS.CONV].valueOf() + proposal[PROPKEYS.STAKED].valueOf(),
+    };
 }
 
 async function mineConviction(viction, proposalId, times) {
