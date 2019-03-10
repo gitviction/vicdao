@@ -39,8 +39,8 @@ contract('GitViction', async (accounts) => {
     let multiplier = Math.pow(10, 18);
     let mint0 = 100 * multiplier,
         mint1 = 150 * multiplier,
-        mint2 = 20 * multiplier,
-        mint3 = 60 * multiplier,
+        mint2 = 40 * multiplier,
+        mint3 = 65 * multiplier,
         mint4 = 800 * multiplier;
     let balance0, balance1, balance2, balance3;
     let proposal;
@@ -63,6 +63,13 @@ contract('GitViction', async (accounts) => {
         amount: 2 * multiplier,
         id: 1234,
         address: accounts[5],
+        stakes: [
+            55 * multiplier,
+            40 * multiplier,
+            15 * multiplier,
+            20 * multiplier,
+            10 * multiplier,
+        ],
     }
     it("big test", async () => {
         victionT = await VictionToken.new({from: accounts[0]});
@@ -247,7 +254,8 @@ contract('GitViction', async (accounts) => {
         // );
     });
 
-    it("simulation", async () => {
+    it("simulation1", async () => {
+        let simValues = [];
         victionT = await VictionToken.new({from: accounts[0]});
         viction = await GitViction.new({from: accounts[0]});
         await viction.setToken(victionT.address, {from: accounts[0]});
@@ -265,28 +273,83 @@ contract('GitViction', async (accounts) => {
         await viction.addProposal(proposal1.amount, proposal1.id, proposal1.address);
         await viction.addProposal(proposal2.amount, proposal2.id, proposal2.address);
 
+        simValues.push(getConviction(viction, 1));
         await viction.stakeToProposal(1, proposal1.stakes[0], {from: accounts[0]});
-        await mineBlocks(3);
+        simValues = simValues.concat(await mineConviction(viction, 1, 3));
 
         await viction.stakeToProposal(1, proposal1.stakes[1], {from: accounts[1]});
-        await mineBlocks(3);
+        simValues = simValues.concat(await mineConviction(viction, 1, 3));
+
         await viction.stakeToProposal(1, proposal1.stakes[2], {from: accounts[2]});
-        await mineBlocks(5);
+        simValues = simValues.concat(await mineConviction(viction, 1, 5));
 
         await viction.stakeToProposal(1, proposal1.stakes[3], {from: accounts[3]});
-        await mineBlocks(8);
+        simValues = simValues.concat(await mineConviction(viction, 1, 8));
 
         await viction.stakeToProposal(1, proposal1.stakes[4], {from: accounts[4]});
-        await mineBlocks(10);
+        simValues = simValues.concat(await mineConviction(viction, 1, 10));
+        console.log('simValues', JSON.stringify(simValues))
+    });
+
+    it("simulation2", async () => {
+        let simValues1 = [], simValues2 = [];
+        victionT = await VictionToken.new({from: accounts[0]});
+        viction = await GitViction.new({from: accounts[0]});
+        await viction.setToken(victionT.address, {from: accounts[0]});
+
+        // Send some ETH to GitViction - this is the total commons
+        web3.eth.sendTransaction({from: accounts[6], to: viction.address, value: 5000 * multiplier});
+        web3.eth.sendTransaction({from: accounts[7], to: viction.address, value: 5000 * multiplier});
+
+        await victionT.mint(mint0, {from: accounts[0]});
+        await victionT.mint(mint1, {from: accounts[1]});
+        await victionT.mint(mint2, {from: accounts[2]});
+        await victionT.mint(mint3, {from: accounts[3]});
+        await victionT.mint(mint4, {from: accounts[4]});
+
+        await viction.addProposal(proposal1.amount, proposal1.id, proposal1.address);
+        await viction.addProposal(proposal2.amount, proposal2.id, proposal2.address);
+
+        simValues1.push(getConviction(viction, 1));
+        simValues2.push(getConviction(viction, 2));
+        await viction.stakeToProposal(1, proposal1.stakes[0], {from: accounts[0]});
+        simValues1 = simValues1.concat(await mineConviction(viction, 1, 3));
+        await viction.stakeToProposal(2, proposal2.stakes[0], {from: accounts[0]});
+        simValues2 = simValues2.concat(await mineConviction(viction, 2, 3));
+
+        await viction.stakeToProposal(1, proposal1.stakes[1], {from: accounts[1]});
+        simValues1 = simValues1.concat(await mineConviction(viction, 1, 3));
+        await viction.stakeToProposal(2, proposal2.stakes[1], {from: accounts[1]});
+        simValues2 = simValues2.concat(await mineConviction(viction, 2, 3));
+
+        await viction.stakeToProposal(1, proposal1.stakes[2], {from: accounts[2]});
+        simValues1 = simValues1.concat(await mineConviction(viction, 1, 5));
+        await viction.stakeToProposal(2, proposal2.stakes[2], {from: accounts[2]});
+        simValues2 = simValues2.concat(await mineConviction(viction, 2, 5));
+
+        await viction.withdrawFromProposal(2, proposal2.stakes[2], {from: accounts[2]});
+        simValues2 = simValues2.concat(await mineConviction(viction, 2, 5));
+
+        await viction.stakeToProposal(1, proposal1.stakes[3], {from: accounts[3]});
+        simValues1 = simValues1.concat(await mineConviction(viction, 1, 8));
+        await viction.stakeToProposal(2, proposal2.stakes[3], {from: accounts[3]});
+        simValues2 = simValues2.concat(await mineConviction(viction, 2, 8));
+
+        await viction.stakeToProposal(1, proposal1.stakes[4], {from: accounts[4]});
+        simValues1 = simValues1.concat(await mineConviction(viction, 1, 10));
+        await viction.stakeToProposal(2, proposal2.stakes[4], {from: accounts[4]});
+        simValues2 = simValues2.concat(await mineConviction(viction, 2, 10));
+        console.log('simValues1', JSON.stringify(simValues1))
+        console.log('simValues2', JSON.stringify(simValues2))
     });
 });
 
 async function mineBlocks(numberOfBlocks) {
-    console.log('before IB', (await web3.eth.getBlock("latest")).number);
+    // console.log('before IB', (await web3.eth.getBlock("latest")).number);
     for (let i = 0; i < numberOfBlocks; i++) {
         await increaseTime(15);
     }
-    console.log('after IB', (await web3.eth.getBlock("latest")).number);
+    // console.log('after IB', (await web3.eth.getBlock("latest")).number);
 }
 
 function increaseTime(duration) {
@@ -317,3 +380,23 @@ function increaseTime(duration) {
     );
   });
 };
+
+async function getConviction(viction, proposalId) {
+    let proposal = await viction.getProposal(proposalId);
+    return [
+        proposal[PROPKEYS.CONV].valueOf(),
+        proposal[PROPKEYS.STAKED].valueOf(),
+        // proposal[PROPKEYS.BLOCK],
+        (await web3.eth.getBlock("latest")).number,
+    ];
+}
+
+async function mineConviction(viction, proposalId, times) {
+    let simValues = []
+    while (times > 0) {
+        simValues.push(await getConviction(viction, proposalId));
+        await mineBlocks(1);
+        times --;
+    }
+    return simValues;
+}
