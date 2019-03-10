@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import axios from "axios";
 import styled from "styled-components";
+// import GitterCritter from "./GitterCrittter";
 import {
   LineChart,
   Line,
@@ -12,12 +13,22 @@ import {
   YAxis
 } from "recharts";
 
-const VotingTable = styled.table``;
+const VotingTable = styled.table`
+  margin: auto;
+  padding-top: 25vh;
+`;
 
 const TableRow = styled.tr``;
 
 const TableData = styled.td`
   padding: 2rem;
+`;
+
+const TextInput = styled.input``;
+
+const AppContainer = styled.main`
+  align-items: center;
+  justify-content: center;
 `;
 
 const data = [
@@ -37,6 +48,12 @@ export default class App extends React.Component {
     this.state = {
       issues: []
     };
+  }
+
+  startVote(issueid) {
+    // This is not working anymore
+    //  const p = app.addProposal(5, 1, 0x0);
+    //debugger;
   }
 
   componentDidMount() {
@@ -76,30 +93,28 @@ export default class App extends React.Component {
   render() {
     const issues = this.state.issues.map(issue => {
       return (
-        <tbody>
-          <TableRow key={issue.title}>
-            <TableData>{issue.title}</TableData>
-            <TableData>
-              {issue.amount} {issue.denomination}
-            </TableData>
-            <TableData>
-              <LineChart
-                width={400}
-                height={150}
-                data={data}
-                margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-              >
-                <Line type="monotone" dataKey="tokens" stroke="#000" />
-                <Line type="monotone" dataKey="conviction" stroke="#8884d8" />
-                <Line type="monotone" dataKey="total" stroke="#82ca9d" />
-                <CartesianGrid stroke="#ccc" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-              </LineChart>
-            </TableData>
-          </TableRow>
-        </tbody>
+        <TableRow key={issue.title}>
+          <TableData>{issue.title}</TableData>
+          <TableData>
+            {issue.amount} {issue.denomination}
+          </TableData>
+          <TableData>
+            <LineChart
+              width={400}
+              height={150}
+              data={data}
+              margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+            >
+              <Line type="monotone" dataKey="tokens" stroke="#000" />
+              <Line type="monotone" dataKey="conviction" stroke="#8884d8" />
+              <Line type="monotone" dataKey="total" stroke="#82ca9d" />
+              <CartesianGrid stroke="#ccc" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+            </LineChart>
+          </TableData>
+        </TableRow>
       );
     });
 
@@ -112,7 +127,7 @@ export default class App extends React.Component {
             <th>Graph</th>
           </tr>
         </thead>
-        {issues};
+        <tbody>{issues}</tbody>
       </VotingTable>
     );
   }
