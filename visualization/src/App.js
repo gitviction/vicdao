@@ -56,9 +56,9 @@ export default class App extends React.Component {
   }
 
   startVote(issue, amount) {
-    console.log('startVte', issue, amount);
-    amount = ethers.utils.bigNumberify(amount).mul(Math.pow(10, 18));
-    this.viction.stakeToProposal(1, amount);
+    console.log('startVte', issue, amount, issue.proposalid);
+    amount = ethers.utils.bigNumberify(amount * Math.pow(10, 12)).mul(Math.pow(10, 5));
+    this.viction.stakeToProposal(issue.proposalid, amount);
   }
 
   mintTokens() {
@@ -76,10 +76,22 @@ export default class App extends React.Component {
       this.victionT = new ethers.Contract(CONTRACTS.victiont.address['3'], CONTRACTS.victiont.abi, this.signer);
       this.viction = new ethers.Contract(CONTRACTS.viction.address['3'], CONTRACTS.viction.abi, this.signer);
       console.log(this.victionT, this.viction);
+      this.getAllProposals();
   }
 
   componentDidMount() {
     this.connectMetamask();
+    this.importFromGithub('');
+  }
+
+  async insertIssues(url) {
+      await this.importFromGithub(url);
+      this.insertProposals(this.state.issues);
+  }
+
+  importFromGithub(url) {
+    console.log('url', url);
+    // url = `https://api.${url.substring(8)}`;
     axios
       .get(`https://api.github.com/repos/gitviction/vicdao/issues`)
       .then(res => {
@@ -108,9 +120,61 @@ export default class App extends React.Component {
             }
             return accum;
           }, []);
+          console.log('issues', issues);
         this.setState({ issues: issues }, () => {});
       })
       .catch(error => {});
+  }
+
+  async getAllProposals() {
+      console.log('getAllProposals', this.viction, this.viction.interface.events)
+      // let filter = this.viction.ProposalAdded(null);
+      // console.log(filter)
+      //   on('ProposalAdded', async (id) => {
+      //     console.log('ProposalAdded', id);
+      // });
+
+      const ProposalAddedEvent = this.viction.interface.events.ProposalAdded;
+
+    const logs = await this.provider.getLogs({
+        fromBlock: 0,
+        toBlock: "latest",
+        address: this.viction.address,
+        topics: ProposalAddedEvent.topics
+    });
+    let issues = [];
+    for (const log of logs)
+    {
+        console.log(log)
+        if (log.topics.indexOf(ProposalAddedEvent.topic) > -1) {
+            const logData = parseInt(ethers.utils.hexStripZeros(log.data), 16) // ProposalAddedEvent.parse(log.topics, log.data);
+
+            console.log(logData);
+
+            let chainissue = await this.viction.getProposal(logData);
+            console.log('chainissue', chainissue);
+            this.state.issues = this.state.issues.map(issue => {
+                if (issue.id == chainissue[1].toNumber()) {
+                    issue.proposalid = logData;
+                }
+                return issue;
+            });
+        }
+    }
+  }
+
+  insertProposals(issues) {
+     issues.forEach(issue => {
+        console.log('issue', issue, issue.amount, this.viction)
+        let amount = ethers.utils.bigNumberify(issue.amount * Math.pow(10, 5))
+            .mul(Math.pow(10, 12));
+        // console.log('amount', amount)
+        this.viction.addProposal(
+            amount,
+            issue.id,
+            "0xbB5AEb01acF5b75bc36eC01f5137Dd2728FbE983",
+        ).then(console.log);
+    });
   }
 
   render() {
@@ -158,6 +222,14 @@ export default class App extends React.Component {
         onClick={e => {
           this.mintTokens();
       }}>Mint Voting Tokens
+    </button>
+    <TextInput onChange={(e)=>{this.setState({githubUrl:e.target.value})}}  type="text" defaultValue=""
+    />
+    <button
+        className="btn btn-default"
+        onClick={e => {
+          this.insertIssues(this.state.githubUrl);
+      }}>Import GitHub Issues
     </button>
       <VotingTable>
         <thead>
