@@ -2,6 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 import axios from "axios";
 import styled from "styled-components";
+import { ethers } from 'ethers';
+import {CONTRACTS} from './contracts';
+
 // import GitterCritter from "./GitterCrittter";
 import {
   LineChart,
@@ -12,6 +15,8 @@ import {
   XAxis,
   YAxis
 } from "recharts";
+
+window.ethers = ethers;
 
 const VotingTable = styled.table`
   margin: auto;
@@ -50,13 +55,31 @@ export default class App extends React.Component {
     };
   }
 
-  startVote(issueid) {
-    // This is not working anymore
-    //  const p = app.addProposal(5, 1, 0x0);
-    //debugger;
+  startVote(issue, amount) {
+    console.log('startVte', issue, amount);
+    amount = ethers.utils.bigNumberify(amount).mul(Math.pow(10, 18));
+    this.viction.stakeToProposal(1, amount);
+  }
+
+  mintTokens() {
+    const mint = ethers.utils.bigNumberify(10 * Math.pow(10, 12)).mul(5 * Math.pow(10, 6));
+    const receipt = this.victionT.mint(mint).then(receipt => {
+        console.log('receipt', receipt);
+    });
+
+  }
+
+  connectMetamask() {
+      console.log('web3', window.web3);
+      this.provider = new ethers.providers.Web3Provider(window.web3.currentProvider);
+      this.signer = this.provider.getSigner();
+      this.victionT = new ethers.Contract(CONTRACTS.victiont.address['3'], CONTRACTS.victiont.abi, this.signer);
+      this.viction = new ethers.Contract(CONTRACTS.viction.address['3'], CONTRACTS.viction.abi, this.signer);
+      console.log(this.victionT, this.viction);
   }
 
   componentDidMount() {
+    this.connectMetamask();
     axios
       .get(`https://api.github.com/repos/gitviction/vicdao/issues`)
       .then(res => {
@@ -114,11 +137,28 @@ export default class App extends React.Component {
               <Tooltip />
             </LineChart>
           </TableData>
+          <TableData>
+            <TextInput onChange={(e)=>{this.setState({votingamount:e.target.value})}}  type="number" defaultValue="0"
+            />
+            <button
+                className="btn btn-default"
+                onClick={e => {
+                  this.startVote(issue, this.state.votingamount);
+              }}>Vote
+            </button>
+          </TableData>
         </TableRow>
       );
     });
 
     return (
+    <div>
+    <button
+        className="btn btn-default"
+        onClick={e => {
+          this.mintTokens();
+      }}>Mint Voting Tokens
+    </button>
       <VotingTable>
         <thead>
           <tr>
@@ -129,6 +169,7 @@ export default class App extends React.Component {
         </thead>
         <tbody>{issues}</tbody>
       </VotingTable>
+     </div>
     );
   }
 }
