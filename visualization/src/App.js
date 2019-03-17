@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { ethers } from 'ethers';
 import {CONTRACTS} from './contracts';
 import GitCoinButton from 'gitcoinbutton';
+import {waitAsync} from './utils';
 
 // import GitterCritter from "./GitterCrittter";
 import {
@@ -70,12 +71,29 @@ export default class App extends React.Component {
 
   }
 
-  connectMetamask() {
+  async connectMetamask() {
       console.log('web3', window.web3);
       this.provider = new ethers.providers.Web3Provider(window.web3.currentProvider);
       this.signer = this.provider.getSigner();
-      this.victionT = new ethers.Contract(CONTRACTS.victiont.address['3'], CONTRACTS.victiont.abi, this.signer);
-      this.viction = new ethers.Contract(CONTRACTS.viction.address['3'], CONTRACTS.viction.abi, this.signer);
+
+      await waitAsync(1000);
+      this.initializeContracts();
+  }
+
+  async initializeContracts() {
+      const networkId = String(this.provider.network.chainId);
+
+      this.viction = new ethers.Contract(
+          CONTRACTS.viction.networks[networkId].address,
+          CONTRACTS.viction.abi,
+          this.signer,
+      );
+
+      this.victionT = new ethers.Contract(
+          await this.viction.token(),
+          CONTRACTS.victiont.abi,
+          this.signer,
+      );
       console.log(this.victionT, this.viction);
       this.getAllProposals();
   }
