@@ -27,8 +27,8 @@ contract GitViction {
     }
 
     event ProposalAdded(uint256 id);
-    event Staked(uint256 id, address voter, uint256 amount, uint256 conviction);
-    event Withdrawn(uint256 id, address voter, uint256 amount, uint256 conviction);
+    event Staked(uint256 id, address voter, uint256 staked_tokens, uint256 conviction);
+    event Withdrawn(uint256 id, address voter, uint256 staked_tokens, uint256 conviction);
     event ProposalPassed(uint256 id, uint256 conviction);
 
     function () payable external {}
@@ -101,7 +101,7 @@ contract GitViction {
         }
         stakes_per_voter[msg.sender] += amount;
         calculateAndSetConviction(id, old_staked);
-        emit Staked(id, msg.sender, amount, proposal.conviction_last);
+        emit Staked(id, msg.sender, proposal.staked_tokens, proposal.conviction_last);
     }
 
     function withdrawFromProposal(uint256 id, uint256 amount) external {
@@ -113,7 +113,7 @@ contract GitViction {
         proposal.staked_tokens -= amount;
         stakes_per_voter[msg.sender] -= amount;
         calculateAndSetConviction(id, old_staked);
-        emit Withdrawn(id, msg.sender, amount, proposal.conviction_last);
+        emit Withdrawn(id, msg.sender, proposal.staked_tokens, proposal.conviction_last);
     }
 
     function sendToProposal(uint256 id) payable external {
