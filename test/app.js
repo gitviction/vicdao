@@ -36,7 +36,7 @@ contract('GitViction', async (accounts) => {
     let victionT;
     let viction;
     let alpha, timeUnit, weight, maxFunded;
-    let multiplier = Math.pow(10, 18);
+    let multiplier = Math.pow(10, 3);
     let mint0 = 100 * multiplier,
         mint1 = 150 * multiplier,
         mint2 = 20 * multiplier,
@@ -66,9 +66,8 @@ contract('GitViction', async (accounts) => {
     }
     it("big test", async () => {
         victionT = await VictionToken.new({from: accounts[0]});
-        viction = await GitViction.new({from: accounts[0]});
+        viction = await GitViction.new(victionT.address, {from: accounts[0]});
 
-        await viction.setToken(victionT.address, {from: accounts[0]});
         assert.equal(
             await viction.token(),
             victionT.address
@@ -160,6 +159,7 @@ contract('GitViction', async (accounts) => {
             await viction.stakes_per_voter(accounts[0]),
             `stakes_per_voter for accounts[0] is not ${proposal1.stakes[0]}`,
         );
+
         proposal = await viction.getProposal(1);
         assert.equal(
             proposal1.stakes[0],
@@ -231,6 +231,13 @@ contract('GitViction', async (accounts) => {
             `Log2 should be ${Math.log2(testValue)} instead of ${await viction.log2(testValue)}`,
         );
 
+        await viction.withdrawFromProposal(1, proposal1.stakes[0], {from: accounts[0]});
+        assert.equal(
+            0,
+            await viction.stakes_per_voter(accounts[0]),
+            `stakes_per_voter for accounts[0] is not ${proposal1.stakes[0]}`,
+        );
+
         // threshold = await viction.calculateThreshold(proposal1.amount);
         // let totalC = await web3.eth.getBalance(viction.address);
         // let jsThreshold = calculateThreshold(
@@ -249,8 +256,7 @@ contract('GitViction', async (accounts) => {
 
     it("simulation", async () => {
         victionT = await VictionToken.new({from: accounts[0]});
-        viction = await GitViction.new({from: accounts[0]});
-        await viction.setToken(victionT.address, {from: accounts[0]});
+        viction = await GitViction.new(victionT.address, {from: accounts[0]});
 
         // Send some ETH to GitViction - this is the total commons
         web3.eth.sendTransaction({from: accounts[6], to: viction.address, value: 5000 * multiplier});
@@ -282,11 +288,9 @@ contract('GitViction', async (accounts) => {
 });
 
 async function mineBlocks(numberOfBlocks) {
-    console.log('before IB', (await web3.eth.getBlock("latest")).number);
     for (let i = 0; i < numberOfBlocks; i++) {
         await increaseTime(15);
     }
-    console.log('after IB', (await web3.eth.getBlock("latest")).number);
 }
 
 function increaseTime(duration) {

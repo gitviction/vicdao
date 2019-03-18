@@ -1,9 +1,8 @@
 pragma solidity ^0.4.24;
 
 import './token/VictionToken.sol';
-import '@aragon/os/contracts/apps/AragonApp.sol';
 
-contract GitViction is AragonApp {
+contract GitViction {
 
     uint256 public TIME_UNIT = 1;
     uint256 public PADD = 10;
@@ -28,24 +27,22 @@ contract GitViction is AragonApp {
     }
 
     event ProposalAdded(uint256 id);
-    event Staked(uint256 id, address voter, uint256 amount);
-    event Withdrawn(uint256 id, address voter, uint256 amount);
+    event Staked(uint256 id, address voter, uint256 staked_tokens, uint256 conviction);
+    event Withdrawn(uint256 id, address voter, uint256 staked_tokens, uint256 conviction);
     event ProposalPassed(uint256 id, uint256 conviction);
-    event Log(uint256 conviction);
 
     function () payable external {}
 
     // Aragon roles
     bytes32 constant public VOTER_ROLE = keccak256("VOTER_ROLE");
 
-    function setToken(address viction_token) public {
+    constructor(address viction_token) public {
         token = VictionToken(viction_token);
     }
 
     function mint(uint256 _amount) public {
         token.mintFor(_amount,msg.sender);
     }
-
 
     function addProposal(
         uint256 _amount_commons,
@@ -61,8 +58,8 @@ contract GitViction is AragonApp {
             0,
             0
         );
-        ProposalAdded(proposal_counter);
-        proposal_counter++;        
+        emit ProposalAdded(proposal_counter);
+        proposal_counter++;
     }
 
     function getProposal (uint256 id) view public returns (
@@ -93,22 +90,30 @@ contract GitViction is AragonApp {
     function stakeToProposal(uint256 id, uint256 amount) external {
         // make sure user does not stake more than he has
         require(stakes_per_voter[msg.sender] + amount < token.balanceOf(msg.sender));
-        uint256 old_staked = proposals[id].staked_tokens;
-        proposals[id].stakes_per_voter[msg.sender] += amount;
-        proposals[id].staked_tokens += amount;
-        if (proposals[id].block_last == 0) {
-            proposals[id].block_last = block.number - TIME_UNIT;
+
+        Proposal storage proposal = proposals[id];
+        uint256 old_staked = proposal.staked_tokens;
+        proposal.stakes_per_voter[msg.sender] += amount;
+        proposal.staked_tokens += amount;
+
+        if (proposal.block_last == 0) {
+            proposal.block_last = block.number - TIME_UNIT;
         }
         stakes_per_voter[msg.sender] += amount;
         calculateAndSetConviction(id, old_staked);
+        emit Staked(id, msg.sender, proposal.staked_tokens, proposal.conviction_last);
     }
 
     function withdrawFromProposal(uint256 id, uint256 amount) external {
-        require(proposals[id].stakes_per_voter[msg.sender] >= amount);
-        uint256 old_staked = proposals[id].staked_tokens;
-        proposals[id].staked_tokens -= amount;
+        Proposal storage proposal = proposals[id];
+
+        require(proposal.stakes_per_voter[msg.sender] >= amount);
+
+        uint256 old_staked = proposal.staked_tokens;
+        proposal.staked_tokens -= amount;
         stakes_per_voter[msg.sender] -= amount;
         calculateAndSetConviction(id, old_staked);
+        emit Withdrawn(id, msg.sender, proposal.staked_tokens, proposal.conviction_last);
     }
 
     function sendToProposal(uint256 id) payable external {
@@ -140,12 +145,11 @@ contract GitViction is AragonApp {
             conviction = CONV_ALPHA * conviction / PADD / 10 + old_amount;
         }
         conviction = CONV_ALPHA * conviction / PADD / 10 + new_amount;
-        emit Log(conviction);
         return conviction;
     }
 
-    function calculateThreshold(uint256 amount_commons) view public returns (uint256 threshold) {
-        return 400 * (10 ** 18);
+    function calculateThreshold(uint256 amount_commons) pure public returns (uint256 threshold) {
+        return 400 * (10 ** 18) + amount_commons;
         // - wS*log(β-r)
         // uint256 total_commons = address(this).balance;
         // threshold = weight * token.totalSupply();
