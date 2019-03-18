@@ -109,18 +109,16 @@ export default class App extends React.Component {
   }
 
   importFromGithub(url) {
-    console.log('url', url);
     // url = `https://api.${url.substring(8)}`;
-    axios
+    return axios
       .get(`https://api.github.com/repos/gitviction/vicdao/issues`)
       .then(res => {
-        // debugger;
         let issues = res.data
           .map(issue => {
             // parse issue body
             const voteData = issue.body.split(" ");
             let a = 0;
-            let d = "DAI";
+            let d = "ETH";
             if (voteData.length === 3 && voteData[0] === "voteonfunding") {
               a = parseInt(voteData[1]);
               d = voteData[2];
@@ -129,7 +127,8 @@ export default class App extends React.Component {
             return {
               ...issue,
               amount: a,
-              denomination: d
+              denomination: 'ETH',
+              data: [],
             };
           })
           .reduce((accum, issue) => {
@@ -146,45 +145,51 @@ export default class App extends React.Component {
   }
 
   async getAllProposals() {
-      console.log('getAllProposals', this.viction, this.viction.interface.events)
       // let filter = this.viction.ProposalAdded(null);
       // console.log(filter)
       //   on('ProposalAdded', async (id) => {
       //     console.log('ProposalAdded', id);
       // });
-
-      const ProposalAddedEvent = this.viction.interface.events.ProposalAdded;
-
     const logs = await this.provider.getLogs({
         fromBlock: 0,
         toBlock: "latest",
         address: this.viction.address,
-        topics: ProposalAddedEvent.topics
     });
     let issues = [];
-    for (const log of logs)
-    {
-        console.log(log)
-        if (log.topics.indexOf(ProposalAddedEvent.topic) > -1) {
-            const logData = parseInt(ethers.utils.hexStripZeros(log.data), 16) // ProposalAddedEvent.parse(log.topics, log.data);
+    for (const log of logs) {
+        const parsedLog = this.viction.interface.parseLog(log);
 
-            console.log(logData);
+        if (parsedLog.name === 'ProposalAdded') {
+            let chainissue = await this.viction.getProposal(parsedLog.values.id);
 
-            let chainissue = await this.viction.getProposal(logData);
-            console.log('chainissue', chainissue);
-            this.state.issues = this.state.issues.map(issue => {
+            issues = this.state.issues.map(issue => {
                 if (issue.id == chainissue[1].toNumber()) {
-                    issue.proposalid = logData;
+                    issue.proposalid = parsedLog.values.id;
+                }
+                return issue;
+            });
+        } else if (parsedLog.name === 'Staked' || parsedLog.name === 'Withdrawn') {
+            console.log('parsedLog', parsedLog)
+            const {id, voter, staked_tokens, conviction} = parsedLog.values;
+            issues = this.state.issues.map(issue => {
+                if (issue.proposalid.eq(id)) {
+                    issue.data.push({
+                        name: id,
+                        conviction: conviction,
+                        tokens: staked_tokens,
+                        block: log.blockNumber,
+                    });
                 }
                 return issue;
             });
         }
     }
+    console.log('issues', issues);
+    this.setState({ issues });
   }
 
   insertProposals(issues) {
      issues.forEach(issue => {
-        console.log('issue', issue, issue.amount, this.viction)
         let amount = ethers.utils.bigNumberify(issue.amount * Math.pow(10, 5))
             .mul(Math.pow(10, 12));
         // console.log('amount', amount)
@@ -208,14 +213,14 @@ export default class App extends React.Component {
             <LineChart
               width={400}
               height={150}
-              data={data}
+              data={issue.data}
               margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
             >
               <Line type="monotone" dataKey="tokens" stroke="#000" />
               <Line type="monotone" dataKey="conviction" stroke="#8884d8" />
-              <Line type="monotone" dataKey="total" stroke="#82ca9d" />
+
               <CartesianGrid stroke="#ccc" />
-              <XAxis dataKey="name" />
+              <XAxis dataKey="block" />
               <YAxis />
               <Tooltip />
             </LineChart>
