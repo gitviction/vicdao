@@ -1,3 +1,28 @@
+
+Test contracts:
+
+```
+cd vicdao
+aragon contracts test
+```
+
+Start a development testnet like Ganache on port 8545 and then deploy:
+```
+aragon contracts migrate --network development --reset
+```
+
+Symlink the contract's build folder to the react app:
+
+```
+ln -s path/to/vicdao/build path/to/vicdao/visualization/src
+```
+
+- Connect with Metamask on port 8545
+- Click on import GitHub Issues
+- Click on Mint Voting Tokens to assign yourself some tokens
+
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
