@@ -1,3 +1,7 @@
+**Requires Aragon CLI**
+```
+npm install -g @aragon/cli
+```
 
 Test contracts:
 
@@ -27,7 +31,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Available Scripts
 
-In the project directory, you can run:
+In the project directory `/vicdao/visualization`, you can run:
 
 ### `npm start`
 
