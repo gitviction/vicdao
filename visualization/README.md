@@ -1,6 +1,8 @@
-**Requires Aragon CLI**
+**Requires Aragon CLI and Ganache CLI**
 ```
 npm install -g @aragon/cli
+
+npm install -g ganache-cli
 ```
 
 Test contracts:
